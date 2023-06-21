@@ -28,11 +28,22 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	galbimandudevcomv1alpha1 "github.com/tae2089/mysql-operator/api/v1alpha1"
+)
+
+const (
+	APIVersion             = "core/v1"
+	SecretKind             = "Secret"
+	ConfigMapKind          = "ConfigMap"
+	containerProbeURI      = "login"
+	containerProbePortName = "http"
 )
 
 // MysqlReconciler reconciles a Mysql object
@@ -121,6 +132,17 @@ func (r *MysqlReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Spec updated - updated return and
 		return ctrl.Result{Requeue: true}, nil
 	}
+	imageVersion := reqMysql.Spec.Image
+	if found.Spec.Template.Spec.Containers[0].Image != imageVersion {
+		found.Spec.Template.Spec.Containers[0].Image = imageVersion
+		err = r.Update(ctx, found)
+		if err != nil {
+			log.Println(err, "Faild to update StatefulSet")
+			return ctrl.Result{}, err
+		}
+		// Spec updated - updated return and
+		return ctrl.Result{}, nil
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -152,6 +174,13 @@ func (r *MysqlReconciler) createStatefulset(ctx context.Context, reqMysql *galbi
 			Selector: &metav1.LabelSelector{
 				MatchLabels: getLabel(reqMysql.Name),
 			},
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+				RollingUpdate: &appsv1.RollingUpdateStatefulSetStrategy{
+					MaxUnavailable: &intstr.IntOrString{
+						IntVal: 1,
+					},
+				},
+			},
 			PersistentVolumeClaimRetentionPolicy: &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
 				WhenDeleted: appsv1.DeletePersistentVolumeClaimRetentionPolicyType,
 				WhenScaled:  appsv1.RetainPersistentVolumeClaimRetentionPolicyType,
@@ -164,7 +193,7 @@ func (r *MysqlReconciler) createStatefulset(ctx context.Context, reqMysql *galbi
 					Containers: []corev1.Container{
 						{
 							Name:  containerName,
-							Image: "mysql:8.0.33",
+							Image: reqMysql.Spec.Image,
 							Ports: []corev1.ContainerPort{
 								{
 									Protocol:      corev1.ProtocolTCP,
@@ -290,8 +319,13 @@ func all(target []bool) bool {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *MysqlReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	secretResource := &source.Kind{Type: &corev1.Secret{TypeMeta: metav1.TypeMeta{APIVersion: APIVersion, Kind: SecretKind}}}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&galbimandudevcomv1alpha1.Mysql{}).
+		Owns(&appsv1.StatefulSet{}).
+		Owns(&corev1.Secret{}).
+		Owns(&corev1.Service{}).
+		Watches(secretResource, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }
 

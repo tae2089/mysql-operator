@@ -37,6 +37,8 @@ spec:
             properties:
               dataPvcName:
                 type: string
+              image:
+                type: string
               replicas:
                 format: int32
                 type: integer
@@ -46,6 +48,7 @@ spec:
                 type: string
             required:
             - dataPvcName
+            - image
             - replicas
             - rootPassword
             type: object

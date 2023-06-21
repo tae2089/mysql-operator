@@ -11,6 +11,6 @@ metadata:
 spec:
   # TODO(user): Add fields here
   dataPvcName: test-pvc-name
-  # image: mysql:latest
-  replicas: 1
+  image: mysql:8.0.33
+  replicas: 2
   rootPassword: "hello123"

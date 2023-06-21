@@ -32,6 +32,7 @@ type MysqlSpec struct {
 	RootPassword string `json:"rootPassword"`
 	Replicas     int32  `json:"replicas"`
 	DataPvcName  string `json:"dataPvcName"`
+	Image        string `json:"image"`
 }
 
 // MysqlStatus defines the observed state of Mysql
