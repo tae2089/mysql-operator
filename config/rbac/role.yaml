@@ -91,3 +91,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - galbimandudev.com
+  resources:
+  - sqlwriters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - galbimandudev.com
+  resources:
+  - sqlwriters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - galbimandudev.com
+  resources:
+  - sqlwriters/status
+  verbs:
+  - get
+  - patch
+  - update

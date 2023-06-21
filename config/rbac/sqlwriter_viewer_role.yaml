@@ -1,0 +1,27 @@
+# permissions for end users to view sqlwriters.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: sqlwriter-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: mysql-operator
+    app.kubernetes.io/part-of: mysql-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: sqlwriter-viewer-role
+rules:
+- apiGroups:
+  - galbimandudev.com
+  resources:
+  - sqlwriters
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - galbimandudev.com
+  resources:
+  - sqlwriters/status
+  verbs:
+  - get

@@ -1,0 +1,12 @@
+apiVersion: galbimandudev.com/v1alpha1
+kind: SqlWriter
+metadata:
+  labels:
+    app.kubernetes.io/name: sqlwriter
+    app.kubernetes.io/instance: sqlwriter-sample
+    app.kubernetes.io/part-of: mysql-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: mysql-operator
+  name: sqlwriter-sample
+spec:
+  # TODO(user): Add fields here
