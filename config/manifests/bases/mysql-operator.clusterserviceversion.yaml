@@ -1,0 +1,52 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: mysql-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: Mysql is the Schema for the mysqls API
+      displayName: Mysql
+      kind: Mysql
+      name: mysqls.galbimandudev.com
+      version: v1alpha1
+    - description: SqlWriter is the Schema for the sqlwriters API
+      displayName: Sql Writer
+      kind: SqlWriter
+      name: sqlwriters.galbimandudev.com
+      version: v1alpha1
+  description: testing
+  displayName: mysql-operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - test
+  links:
+  - name: Mysql Operator
+    url: https://mysql-operator.domain
+  maintainers:
+  - email: devops@gmail.com
+    name: testing
+  maturity: alpha
+  provider:
+    name: bob
+  version: 0.0.0

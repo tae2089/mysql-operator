@@ -14,3 +14,19 @@ spec:
   image: mysql:8.0.33
   replicas: 2
   rootPassword: "hello123"
+  livenessProbe:
+    exec:
+      command:
+        - bash
+        - "-c"
+        - echo  "Hello World"
+    initialDelaySeconds: 60
+    timeoutSeconds: 10
+  readinessProbe:
+    exec:
+      command:
+        - bash
+        - "-c"
+        - echo  "Hello World"
+    initialDelaySeconds: 60
+    timeoutSeconds: 10
