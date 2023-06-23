@@ -86,10 +86,6 @@ func (r *MysqlReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	err := r.Get(ctx, req.NamespacedName, reqMysql)
 	if err != nil {
 		if kerrors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
-			log.Println("Memcached resource not found. Ignoring since object must be deleted")
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -132,17 +128,21 @@ func (r *MysqlReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Spec updated - updated return and
 		return ctrl.Result{Requeue: true}, nil
 	}
+	//delete pods when changed Image
 	imageVersion := reqMysql.Spec.Image
-	if found.Spec.Template.Spec.Containers[0].Image != imageVersion {
-		found.Spec.Template.Spec.Containers[0].Image = imageVersion
-		err = r.Update(ctx, found)
-		if err != nil {
-			log.Println(err, "Faild to update StatefulSet")
-			return ctrl.Result{}, err
+	for i, container := range found.Spec.Template.Spec.Containers {
+		if container.Image != imageVersion {
+			found.Spec.Template.Spec.Containers[i].Image = imageVersion
+			err = r.Update(ctx, found)
+			if err != nil {
+				log.Println(err, "Faild to update StatefulSet")
+				return ctrl.Result{}, err
+			}
+			// Spec updated - updated return and
+			return ctrl.Result{Requeue: true}, nil
 		}
-		// Spec updated - updated return and
-		return ctrl.Result{}, nil
 	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -219,6 +219,8 @@ func (r *MysqlReconciler) createStatefulset(ctx context.Context, reqMysql *galbi
 									MountPath: dataVolumeMountPath,
 								},
 							},
+							LivenessProbe:  reqMysql.Spec.LivenessProbe,
+							ReadinessProbe: reqMysql.Spec.ReadinessProbe,
 						},
 					},
 				},
